@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Changelog — SilentCut</title>
+  <meta name="description" content="SilentCut release history and changelog.">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --black: #000000; --light-bg: #f5f5f7; --near-black: #1d1d1f;
+      --blue: #0071e3; --link-blue: #0066cc; --white: #ffffff;
+      --text-secondary: rgba(0,0,0,0.8); --text-tertiary: rgba(0,0,0,0.48);
+      --font: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+    body { font-family: var(--font); color: var(--near-black); background: var(--light-bg); -webkit-font-smoothing: antialiased; }
+
+    nav { position: fixed; top: 0; left: 0; right: 0; z-index: 1000; height: 48px; background: rgba(0,0,0,0.82); backdrop-filter: saturate(180%) blur(20px); -webkit-backdrop-filter: saturate(180%) blur(20px); display: flex; align-items: center; justify-content: center; }
+    .nav-inner { max-width: 980px; width: 100%; padding: 0 22px; display: flex; align-items: center; justify-content: space-between; }
+    .nav-logo { font-size: 16px; font-weight: 600; color: var(--white); text-decoration: none; letter-spacing: -0.3px; display: flex; align-items: center; gap: 8px; }
+    .nav-logo .logo-mark { width: 28px; height: 28px; border-radius: 7px; background: var(--blue); display: flex; align-items: center; justify-content: center; font-size: 14px; }
+    .nav-back { font-size: 12px; color: rgba(255,255,255,0.85); text-decoration: none; transition: color 0.2s; }
+    .nav-back:hover { color: var(--white); }
+
+    .page { max-width: 680px; margin: 0 auto; padding: 100px 24px 80px; }
+    .page h1 { font-size: 40px; font-weight: 600; line-height: 1.10; letter-spacing: -0.3px; margin-bottom: 12px; }
+    .page .subtitle { font-size: 17px; color: var(--text-secondary); line-height: 1.47; letter-spacing: -0.374px; margin-bottom: 48px; }
+
+    .release { margin-bottom: 48px; padding-bottom: 48px; border-bottom: 1px solid rgba(0,0,0,0.08); }
+    .release:last-child { border-bottom: none; }
+    .release-header { display: flex; align-items: baseline; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
+    .release-version { font-size: 21px; font-weight: 600; letter-spacing: 0.231px; }
+    .release-date { font-size: 12px; color: var(--text-tertiary); letter-spacing: -0.12px; }
+    .release-tag { font-size: 10px; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; background: var(--blue); color: var(--white); padding: 2px 8px; border-radius: 980px; }
+    .release ul { list-style: none; }
+    .release li { font-size: 14px; line-height: 1.57; letter-spacing: -0.224px; color: var(--text-secondary); padding: 4px 0; padding-left: 20px; position: relative; }
+    .release li::before { content: '→'; position: absolute; left: 0; color: var(--blue); font-weight: 600; }
+
+    footer { background: var(--light-bg); border-top: 1px solid rgba(0,0,0,0.06); padding: 20px 24px; }
+    .footer-inner { max-width: 980px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+    .footer-copy { font-size: 12px; color: var(--text-tertiary); }
+    .footer-links { display: flex; gap: 20px; }
+    .footer-links a { font-size: 12px; color: var(--text-tertiary); text-decoration: none; transition: color 0.2s; }
+    .footer-links a:hover { color: var(--link-blue); }
+
+    @media (max-width: 480px) { .page h1 { font-size: 28px; } .footer-inner { flex-direction: column; text-align: center; } .footer-links { justify-content: center; } }
+  </style>
+</head>
+<body>
+  <nav>
+    <div class="nav-inner">
+      <a href="/" class="nav-logo"><span class="logo-mark">⚡</span> SilentCut</a>
+      <a href="/" class="nav-back">← Back to Home</a>
+    </div>
+  </nav>
+
+  <div class="page">
+    <h1>Changelog</h1>
+    <p class="subtitle">A complete history of updates, improvements, and fixes.</p>
+
+    <div class="release">
+      <div class="release-header">
+        <span class="release-version">v2.0</span>
+        <span class="release-tag">latest</span>
+        <span class="release-date">April 14, 2026</span>
+      </div>
+      <ul>
+        <li>Interactive timeline with pan (scroll) and zoom (Ctrl+Scroll)</li>
+        <li>Click to select silence regions, Delete/X to remove, double-click to toggle</li>
+        <li>Drag on waveform to manually create cut regions</li>
+        <li>Resize region edges by dragging</li>
+        <li>Full undo support with Ctrl+Z / Cmd+Z</li>
+        <li>Playback engine with Skip Silence toggle for real-time preview</li>
+        <li>Smooth auto-scrolling timeline during playback</li>
+        <li>Timeline ruler with adaptive time markers</li>
+        <li>Keyboard shortcuts: Space (play/pause), Delete, Ctrl+Z</li>
+        <li>Output in same format as input (no forced MP4/MP3 conversion)</li>
+        <li>Format-aware codec selection (VP8 for WebM, PCM for WAV, etc.)</li>
+      </ul>
+    </div>
+
+    <div class="release">
+      <div class="release-header">
+        <span class="release-version">v1.0</span>
+        <span class="release-date">April 13, 2026</span>
+      </div>
+      <ul>
+        <li>Initial release of AutoCut Studio (now SilentCut)</li>
+        <li>FFmpeg.wasm integration for browser-based video/audio processing</li>
+        <li>Voice-aware silence detection with adjustable threshold, duration, and padding</li>
+        <li>Waveform visualization with voice/silence color coding</li>
+        <li>Support for 10 file formats: MP4, MOV, MKV, WebM, AVI, MP3, WAV, OGG, M4A, FLAC</li>
+        <li>100% local processing — zero file uploads</li>
+        <li>Patched FFmpeg loader to avoid CORS/Worker issues on any hosting</li>
+      </ul>
+    </div>
+  </div>
+
+  <footer>
+    <div class="footer-inner">
+      <span class="footer-copy">© 2026 SilentCut. Built by <a href="https://instagram.com/techfireco" target="_blank" rel="noopener" style="color:inherit;text-decoration:none;font-weight:500;">Md Kashif Ali</a></span>
+      <div class="footer-links">
+        <a href="changelog.html">Changelog</a>
+        <a href="privacy.html">Privacy</a>
+        <a href="terms.html">Terms</a>
+        <a href="mailto:hello@silentcut.site">Contact</a>
+        <a href="https://instagram.com/techfireco" target="_blank" rel="noopener">Instagram</a>
+        <a href="https://youtube.com/@techfireco" target="_blank" rel="noopener">YouTube</a>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>
