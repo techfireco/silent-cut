@@ -46,6 +46,8 @@
       overflow-x: hidden;
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
+      display: flex;
+      flex-direction: column;
     }
 
     body::before {
@@ -66,43 +68,64 @@
 
     .container {
       max-width: 1120px; margin: 0 auto;
-      padding: 0 1.5rem 3rem;
+      padding: 2rem 1.5rem 3rem;
       position: relative; z-index: 1;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      width: 100%;
     }
 
-    /* ===== HEADER ===== */
-    header {
-      padding: 1.5rem 0;
-      display: flex; align-items: center; justify-content: space-between;
-      border-bottom: 1px solid var(--border);
-      margin-bottom: 2rem;
-    }
-
-    .logo { display: flex; align-items: center; gap: 12px; }
-
-    .logo-icon {
-      width: 38px; height: 38px;
-      background: var(--accent); border-radius: 10px;
+    /* ===== NAVIGATION (matching landing page) ===== */
+    .app-nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+      height: 48px;
+      background: rgba(0, 0, 0, 0.82);
+      backdrop-filter: saturate(180%) blur(20px);
+      -webkit-backdrop-filter: saturate(180%) blur(20px);
       display: flex; align-items: center; justify-content: center;
-      font-size: 18px;
     }
 
-    .logo-text h1 {
-      font-size: 18px; font-weight: 600; letter-spacing: -0.3px;
-      color: var(--text);
+    .nav-inner {
+      max-width: 1120px; width: 100%; padding: 0 22px;
+      display: flex; align-items: center; justify-content: space-between;
     }
 
-    .logo-text p {
-      font-size: 11px; color: var(--muted); margin-top: 1px;
-      font-family: 'JetBrains Mono', monospace; letter-spacing: -0.2px;
+    .nav-logo {
+      font-size: 16px; font-weight: 600; color: #f5f5f7;
+      text-decoration: none; letter-spacing: -0.3px;
+      display: flex; align-items: center; gap: 8px;
     }
 
-    .header-badges { display: flex; gap: 8px; flex-wrap: wrap; }
+    .nav-logo .logo-mark {
+      width: 28px; height: 28px; border-radius: 7px;
+      background: var(--accent);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px;
+    }
+
+    .nav-links { display: flex; gap: 24px; align-items: center; }
+    .nav-links a {
+      font-size: 12px; font-weight: 400; color: rgba(255,255,255,0.85);
+      text-decoration: none; letter-spacing: -0.08px;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: #ffffff; }
+
+    .nav-cta {
+      background: var(--accent); color: #ffffff !important;
+      padding: 5px 14px; border-radius: 980px;
+      font-size: 12px !important; font-weight: 400;
+      transition: background 0.2s !important;
+    }
+    .nav-cta:hover { background: #0077ed !important; }
+
+    .nav-badges { display: flex; gap: 8px; align-items: center; }
 
     .badge {
-      font-size: 11px; padding: 5px 11px; border-radius: 980px;
+      font-size: 11px; padding: 4px 10px; border-radius: 980px;
       border: 1px solid var(--border2); color: var(--muted2);
-      background: var(--surface); font-family: 'JetBrains Mono', monospace;
+      background: rgba(28,28,30,0.6); font-family: 'JetBrains Mono', monospace;
       letter-spacing: -0.1px;
     }
 
@@ -112,6 +135,10 @@
       padding: 4rem 2rem; text-align: center; cursor: pointer;
       transition: all 0.3s ease; background: var(--surface);
       margin-bottom: 1.5rem; position: relative; overflow: hidden;
+      flex: 1;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      min-height: 340px;
     }
 
     .upload-zone .bg-glow {
@@ -439,14 +466,59 @@
       font-size: 12px; color: var(--accent-bright); margin-bottom: 6px;
     }
 
-    /* ===== FOOTER ===== */
-    footer {
-      text-align: center; padding: 2rem 0 0; color: var(--muted);
-      font-size: 12px; border-top: 1px solid var(--border);
+    /* ===== FOOTER (matching landing page) ===== */
+    .app-footer {
+      background: var(--surface); border-top: 1px solid var(--border);
+      padding: 28px 24px 20px; margin-top: 2rem;
+    }
+
+    .footer-inner {
+      max-width: 1120px; margin: 0 auto;
+    }
+
+    .footer-top {
+      display: flex; justify-content: space-between;
+      align-items: center; flex-wrap: wrap; gap: 12px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 12px;
+    }
+
+    .footer-copy {
+      font-size: 12px; color: var(--muted);
       letter-spacing: -0.12px;
     }
-    footer a { color: var(--muted2); text-decoration: none; transition: color 0.2s; }
-    footer a:hover { color: var(--accent-bright); }
+
+    .footer-links { display: flex; gap: 20px; flex-wrap: wrap; }
+
+    .footer-links a {
+      font-size: 12px; color: var(--muted);
+      text-decoration: none; letter-spacing: -0.12px;
+      transition: color 0.2s;
+    }
+    .footer-links a:hover { color: var(--accent-bright); }
+
+    .footer-bottom {
+      display: flex; justify-content: space-between;
+      align-items: center; flex-wrap: wrap; gap: 8px;
+    }
+
+    .footer-creator {
+      font-size: 12px; color: var(--muted); letter-spacing: -0.12px;
+    }
+    .footer-creator a {
+      color: var(--muted2); text-decoration: none;
+      font-weight: 500; transition: color 0.2s;
+    }
+    .footer-creator a:hover { color: var(--accent-bright); }
+
+    .footer-socials { display: flex; gap: 16px; }
+    .footer-socials a {
+      font-size: 12px; color: var(--muted);
+      text-decoration: none; letter-spacing: -0.12px;
+      transition: color 0.2s; display: flex; align-items: center; gap: 4px;
+    }
+    .footer-socials a:hover { color: var(--accent-bright); }
 
     /* ===== ANIMATIONS ===== */
     @keyframes fadeSlideUp {
@@ -459,9 +531,12 @@
     @media (max-width: 820px) {
       .main-layout { grid-template-columns: 1fr; }
       .stats-bar { grid-template-columns: repeat(2, 1fr); }
-      .header-badges { display: none; }
+      .nav-badges { display: none; }
+      .nav-links .nav-link-item { display: none; }
       .playback-bar { flex-wrap: wrap; }
       .skip-toggle { margin-left: 0; }
+      .footer-top, .footer-bottom { flex-direction: column; text-align: center; }
+      .footer-links, .footer-socials { justify-content: center; }
     }
     @media (max-width: 480px) {
       .stat-value { font-size: 20px; }
@@ -469,25 +544,31 @@
     }
   </style>
 </head>
-<body>
+<body style="padding-top: 48px;">
 
-<div class="container">
-
-  <!-- ===== HEADER ===== -->
-  <header>
-    <div class="logo">
-      <div class="logo-icon">⚡</div>
-      <div class="logo-text">
-        <h1>SilentCut</h1>
-        <p>Remove silence · 100% local</p>
+  <!-- ===== NAVIGATION (matching landing page) ===== -->
+  <nav class="app-nav">
+    <div class="nav-inner">
+      <a href="/" class="nav-logo">
+        <span class="logo-mark">⚡</span>
+        SilentCut
+      </a>
+      <div class="nav-badges">
+        <span class="badge">🔒 Local-First</span>
+        <span class="badge" id="sabBadge">⚡ Checking...</span>
+        <span class="badge">🎙️ Voice Aware</span>
+      </div>
+      <div class="nav-links">
+        <a href="/" class="nav-link-item">Home</a>
+        <a href="/#features" class="nav-link-item">Features</a>
+        <a href="/#faq" class="nav-link-item">FAQ</a>
+        <a href="/#donate" class="nav-link-item">Support</a>
+        <a href="app.html" class="nav-cta">Open App</a>
       </div>
     </div>
-    <div class="header-badges">
-      <span class="badge">🔒 Local-First</span>
-      <span class="badge">⚡ Multi-Threaded</span>
-      <span class="badge">🎙️ Voice Aware</span>
-    </div>
-  </header>
+  </nav>
+
+<div class="container">
 
   <!-- ===== FILE:// PROTOCOL WARNING ===== -->
   <div class="file-protocol-warn" id="fileProtocolWarn">
@@ -646,7 +727,7 @@
         <div class="trust-item"><span class="trust-icon">🔒</span><span>Files never leave your device</span></div>
         <div class="trust-item"><span class="trust-icon">☁️</span><span>Zero cloud processing</span></div>
         <div class="trust-item"><span class="trust-icon">📡</span><span>Works fully offline</span></div>
-        <div class="trust-item"><span class="trust-icon">⚡</span><span>SharedArrayBuffer optimized</span></div>
+        <div class="trust-item"><span class="trust-icon">⚡</span><span id="sabTrust">SharedArrayBuffer optimized</span></div>
         <div class="trust-item"><span class="trust-icon">🎙️</span><span>Voice-aware silence detection</span></div>
       </div>
     </div>
@@ -661,13 +742,35 @@
     <div class="progress-status" id="progressStatus">Initializing...</div>
   </div>
 
-  <footer>
-    <a href="/">SilentCut</a> &nbsp;·&nbsp; 100% Local &nbsp;·&nbsp; Built by <a href="https://instagram.com/techfireco" target="_blank" rel="noopener">Md Kashif Ali</a> &nbsp;·&nbsp; <a href="https://instagram.com/techfireco" target="_blank" rel="noopener">Instagram</a> &nbsp;·&nbsp; <a href="https://youtube.com/@techfireco" target="_blank" rel="noopener">YouTube</a>
-  </footer>
 </div>
+
+  <!-- ===== FOOTER (matching landing page) ===== -->
+  <footer class="app-footer">
+    <div class="footer-inner">
+      <div class="footer-top">
+        <span class="footer-copy">© 2026 SilentCut. All rights reserved.</span>
+        <div class="footer-links">
+          <a href="changelog.html">Changelog</a>
+          <a href="privacy.html">Privacy</a>
+          <a href="terms.html">Terms</a>
+          <a href="mailto:hello@silentcut.site">Contact</a>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span class="footer-creator">Built by <a href="https://instagram.com/techfireco" target="_blank" rel="noopener">Md Kashif Ali</a></span>
+        <div class="footer-socials">
+          <a href="https://instagram.com/techfireco" target="_blank" rel="noopener">📸 Instagram</a>
+          <a href="https://youtube.com/@techfireco" target="_blank" rel="noopener">▶️ YouTube</a>
+        </div>
+      </div>
+    </div>
+  </footer>
 
 <!-- ===== TOAST ===== -->
 <div class="toast" id="toast"></div>
+
+<!-- coi-serviceworker: enables SharedArrayBuffer on GitHub Pages -->
+<script src="coi-serviceworker.js"></script>
 
 <script>
 // ================================================================
@@ -686,6 +789,7 @@ let isAudioOnly  = false;
 let ffmpegInst   = null;
 let ffmpegReady  = false;
 let outputBlob   = null;
+let isMultiThreaded = false; // True if SAB is available and MT core loaded
 
 // Peaks (pre-computed for fast rendering)
 const PEAK_RES = 6000;
@@ -1703,19 +1807,76 @@ async function toBlobURL(url, mimeType) {
 }
 
 // ================================================================
-// FFMPEG LOADER — loads ALL assets as blob URLs to avoid CORS/Worker issues
+// SAB STATUS UI — updates badge and trust indicator with real status
+// ================================================================
+function updateSABStatus(mode) {
+  // mode: 'checking' | 'multi' | 'single' | 'error'
+  const badge = $('sabBadge');
+  const trust = $('sabTrust');
+  if (!badge || !trust) return;
+
+  switch (mode) {
+    case 'checking':
+      badge.textContent = '⚡ Checking...';
+      trust.textContent = 'Detecting SharedArrayBuffer...';
+      break;
+    case 'multi':
+      isMultiThreaded = true;
+      badge.textContent = '⚡ Multi-Threaded';
+      badge.style.borderColor = 'rgba(48,209,88,0.4)';
+      badge.style.color = '#30D158';
+      trust.textContent = 'SAB Enabled · Multi-threaded FFmpeg';
+      trust.style.color = '#30D158';
+      break;
+    case 'single':
+      isMultiThreaded = false;
+      badge.textContent = '🔄 Single-Thread';
+      badge.style.borderColor = 'rgba(255,214,10,0.4)';
+      badge.style.color = '#FFD60A';
+      trust.textContent = 'SAB Unavailable · Single-thread fallback';
+      trust.style.color = '#FFD60A';
+      break;
+    case 'error':
+      isMultiThreaded = false;
+      badge.textContent = '⚠ Engine Error';
+      badge.style.borderColor = 'rgba(255,69,58,0.4)';
+      badge.style.color = '#FF453A';
+      trust.textContent = 'FFmpeg failed to load';
+      trust.style.color = '#FF453A';
+      break;
+  }
+}
+
+// ================================================================
+// FFMPEG LOADER — Multi-threaded with single-thread fallback
+// ================================================================
+// Detects SharedArrayBuffer (cross-origin isolation) at runtime.
+// If available: loads @ffmpeg/core-mt for genuine multi-threaded processing.
+// If unavailable: falls back to @ffmpeg/core (single-threaded, still works).
 // ================================================================
 async function startLoadFFmpeg() {
   const loader = $('engineLoader');
   const status = $('engineStatus');
   loader.className = 'engine-loader show';
 
-  try {
-    status.textContent = 'Downloading FFmpeg engine (~31 MB, one-time)...';
+  updateSABStatus('checking');
 
-    // CDN bases
+  // Detect if SharedArrayBuffer is available (requires COOP/COEP headers or coi-serviceworker)
+  const sabAvailable = typeof SharedArrayBuffer !== 'undefined' && window.crossOriginIsolated === true;
+
+  console.log(`[SilentCut] crossOriginIsolated: ${window.crossOriginIsolated}, SharedArrayBuffer: ${typeof SharedArrayBuffer !== 'undefined'}`);
+
+  try {
+    // CDN bases — same version for both ST and MT
     const ffmpegBase = 'https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.12.6/dist/umd';
-    const coreBase   = 'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.6/dist/umd';
+    const coreSTBase = 'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.6/dist/umd';
+    const coreMTBase = 'https://cdn.jsdelivr.net/npm/@ffmpeg/core-mt@0.12.6/dist/umd';
+
+    // Choose core based on SAB availability
+    const coreBase = sabAvailable ? coreMTBase : coreSTBase;
+    const modeLabel = sabAvailable ? 'multi-threaded' : 'single-threaded';
+
+    status.textContent = `Downloading FFmpeg engine (${modeLabel})...`;
 
     // 1) Download the Worker chunk and make a blob URL for it
     status.textContent = 'Downloading FFmpeg worker...';
@@ -1738,12 +1899,20 @@ async function startLoadFFmpeg() {
 
     const mainBlobURL = URL.createObjectURL(new Blob([mainText], { type: 'text/javascript' }));
 
-    // 3) Download core assets
-    status.textContent = 'Downloading FFmpeg core (~30 MB)...';
+    // 3) Download core assets (ST or MT based on SAB detection)
+    const coreSize = sabAvailable ? '~32 MB, multi-threaded' : '~30 MB, single-threaded';
+    status.textContent = `Downloading FFmpeg core (${coreSize})...`;
     const coreURL = await toBlobURL(`${coreBase}/ffmpeg-core.js`,   'text/javascript');
     const wasmURL = await toBlobURL(`${coreBase}/ffmpeg-core.wasm`, 'application/wasm');
 
-    // 4) Load the patched FFmpeg script into the page
+    // 4) For multi-threaded: also download the worker file
+    let workerCoreURL = undefined;
+    if (sabAvailable) {
+      status.textContent = 'Downloading FFmpeg thread worker...';
+      workerCoreURL = await toBlobURL(`${coreBase}/ffmpeg-core.worker.js`, 'text/javascript');
+    }
+
+    // 5) Load the patched FFmpeg script into the page
     await new Promise((resolve, reject) => {
       const script  = document.createElement('script');
       script.src    = mainBlobURL;
@@ -1768,16 +1937,34 @@ async function startLoadFFmpeg() {
       setProgress(30 + pct * 0.6, `Encoding... ${pct}%`);
     });
 
-    status.textContent = 'Initializing FFmpeg engine...';
+    status.textContent = `Initializing FFmpeg engine (${modeLabel})...`;
 
-    await ffmpegInst.load({
+    // 6) Load FFmpeg with appropriate config
+    const loadConfig = {
       coreURL: coreURL,
       wasmURL: wasmURL,
-    });
+    };
 
+    // Only pass workerURL for multi-threaded builds (requires SAB)
+    if (sabAvailable && workerCoreURL) {
+      loadConfig.workerURL = workerCoreURL;
+    }
+
+    await ffmpegInst.load(loadConfig);
+
+    // 7) Update UI with real runtime status
     ffmpegReady = true;
     loader.className = 'engine-loader';
-    toast('Audio engine ready!', 'success');
+
+    if (sabAvailable) {
+      updateSABStatus('multi');
+      toast('Multi-threaded engine ready! ⚡', 'success');
+      console.log('[SilentCut] FFmpeg loaded in MULTI-THREADED mode');
+    } else {
+      updateSABStatus('single');
+      toast('Engine ready (single-thread mode)', 'success');
+      console.log('[SilentCut] FFmpeg loaded in SINGLE-THREADED mode (SAB not available)');
+    }
 
     // Enable export if analysis was already done
     if (analyzed && cutRegions.length > 0) {
@@ -1786,10 +1973,12 @@ async function startLoadFFmpeg() {
 
   } catch(err) {
     console.error('FFmpeg load failed:', err);
+    updateSABStatus('error');
+
     const isFileProtocol = location.protocol === 'file:';
     loader.innerHTML = isFileProtocol
-      ? '<span style="color:#F59E0B;">⚠ Open via http:// not file:// — see the yellow warning above.</span>'
-      : `<span style="color:#EF4444;">⚠ FFmpeg failed: ${err.message}. Try Chrome with internet.</span>`;
+      ? '<span style="color:#FFD60A;">⚠ Open via http:// not file:// — see the yellow warning above.</span>'
+      : `<span style="color:#FF453A;">⚠ FFmpeg failed: ${err.message}. Try Chrome with internet.</span>`;
   }
 }
 
