@@ -837,12 +837,13 @@ const OriginalWorker = window.Worker;
 window.Worker = class extends OriginalWorker {
   constructor(url, options) {
     if (url.toString().startsWith('http') && !url.toString().includes(location.origin)) {
-      const isModule = options && options.type === 'module';
-      const script = isModule 
-        ? `import '${url}';` 
-        : `importScripts('${url}');`;
+      // Always use classic worker — FFmpeg uses importScripts internally
+      // and module workers don't support importScripts()
+      const script = `importScripts('${url}');`;
       const blob = new Blob([script], { type: 'application/javascript' });
       url = URL.createObjectURL(blob);
+      // Strip type:'module' so worker runs in classic mode
+      options = { ...(options || {}), type: undefined };
     }
     super(url, options);
   }
