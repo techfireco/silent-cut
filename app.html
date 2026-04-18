@@ -349,7 +349,7 @@
       gap: 0.5rem;
     }
     .format-picker-wrap {
-      display: flex;
+      display: none;
       align-items: center;
       gap: 8px;
       background: var(--surface2);
@@ -827,7 +827,7 @@
 <!-- coi-serviceworker: enables SharedArrayBuffer on GitHub Pages -->
 <script src="coi-serviceworker.js"></script>
 
-<script>
+<script type="module">
 // ================================================================
 // STATE
 // ================================================================
@@ -1908,11 +1908,9 @@ function updateSABStatus(mode) {
 }
 
 // ================================================================
-// FFMPEG LOADER — Multi-threaded with single-thread fallback
-// ================================================================
-// Detects SharedArrayBuffer (cross-origin isolation) at runtime.
-// If available: loads @ffmpeg/core-mt for genuine multi-threaded processing.
-// If unavailable: falls back to @ffmpeg/core (single-threaded, still works).
+// FFMPEG LOADER — ESM dynamic import (no UMD globals, no brittle patching)
+// Uses esm.sh CDN which handles module resolution correctly.
+// Multi-threaded if SharedArrayBuffer available, single-thread fallback.
 // ================================================================
 async function startLoadFFmpeg() {
   const loader = $('engineLoader');
@@ -1921,112 +1919,60 @@ async function startLoadFFmpeg() {
 
   updateSABStatus('checking');
 
-  // Detect if SharedArrayBuffer is available (requires COOP/COEP headers or coi-serviceworker)
   const sabAvailable = typeof SharedArrayBuffer !== 'undefined' && window.crossOriginIsolated === true;
+  const modeLabel = sabAvailable ? 'multi-threaded' : 'single-threaded';
 
-  console.log(`[SilentCut] crossOriginIsolated: ${window.crossOriginIsolated}, SharedArrayBuffer: ${typeof SharedArrayBuffer !== 'undefined'}`);
+  console.log(`[SilentCut] SAB: ${sabAvailable}, crossOriginIsolated: ${window.crossOriginIsolated}`);
 
   try {
-    // CDN bases — same version for both ST and MT
-    const ffmpegBase = 'https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.12.6/dist/umd';
-    const coreSTBase = 'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.6/dist/umd';
-    const coreMTBase = 'https://cdn.jsdelivr.net/npm/@ffmpeg/core-mt@0.12.6/dist/umd';
+    status.textContent = 'Importing FFmpeg module...';
 
-    // Choose core based on SAB availability
-    const coreBase = sabAvailable ? coreMTBase : coreSTBase;
-    const modeLabel = sabAvailable ? 'multi-threaded' : 'single-threaded';
+    // Dynamic ESM import — reliable, no UMD globals, no manual patching needed
+    const { FFmpeg } = await import('https://esm.sh/@ffmpeg/ffmpeg@0.12.6');
 
-    status.textContent = `Downloading FFmpeg engine (${modeLabel})...`;
-
-    // 1) Download the Worker chunk and make a blob URL for it
-    status.textContent = 'Downloading FFmpeg worker...';
-    const workerResp = await fetch(`${ffmpegBase}/814.ffmpeg.js`);
-    if (!workerResp.ok) throw new Error('Failed to fetch FFmpeg worker chunk');
-    const workerText = await workerResp.text();
-    const workerBlobURL = URL.createObjectURL(new Blob([workerText], { type: 'text/javascript' }));
-
-    // 2) Download the main FFmpeg script and patch the Worker URL
-    status.textContent = 'Downloading FFmpeg main library...';
-    const mainResp = await fetch(`${ffmpegBase}/ffmpeg.js`);
-    if (!mainResp.ok) throw new Error('Failed to fetch FFmpeg main script');
-    let mainText = await mainResp.text();
-
-    // Patch: replace Worker URL construction with our blob URL
-    mainText = mainText.replace(
-      'new Worker(new URL(e.p+e.u(814),e.b),{type:void 0})',
-      `new Worker("${workerBlobURL}")`
-    );
-
-    const mainBlobURL = URL.createObjectURL(new Blob([mainText], { type: 'text/javascript' }));
-
-    // 3) Download core assets (ST or MT based on SAB detection)
-    const coreSize = sabAvailable ? '~32 MB, multi-threaded' : '~30 MB, single-threaded';
-    status.textContent = `Downloading FFmpeg core (${coreSize})...`;
-    const coreURL = await toBlobURL(`${coreBase}/ffmpeg-core.js`,   'text/javascript');
-    const wasmURL = await toBlobURL(`${coreBase}/ffmpeg-core.wasm`, 'application/wasm');
-
-    // 4) For multi-threaded: also download the worker file
-    let workerCoreURL = undefined;
-    if (sabAvailable) {
-      status.textContent = 'Downloading FFmpeg thread worker...';
-      workerCoreURL = await toBlobURL(`${coreBase}/ffmpeg-core.worker.js`, 'text/javascript');
-    }
-
-    // 5) Load the patched FFmpeg script into the page
-    await new Promise((resolve, reject) => {
-      const script  = document.createElement('script');
-      script.src    = mainBlobURL;
-      script.onload = resolve;
-      script.onerror = () => reject(new Error('Failed to load FFmpeg main script'));
-      document.head.appendChild(script);
-    });
-
-    if (typeof FFmpegWASM === 'undefined') {
-      throw new Error('FFmpegWASM not available after script load.');
-    }
-
-    const { FFmpeg } = FFmpegWASM;
     ffmpegInst = new FFmpeg();
-
-    ffmpegInst.on('log', ({ message }) => {
-      // console.log('[ffmpeg]', message);
-    });
 
     ffmpegInst.on('progress', ({ progress }) => {
       const pct = Math.min(99, Math.round(progress * 100));
       setProgress(30 + pct * 0.6, `Encoding... ${pct}%`);
     });
 
-    status.textContent = `Initializing FFmpeg engine (${modeLabel})...`;
+    // Choose core: MT if SAB available, ST otherwise
+    const coreBase = sabAvailable
+      ? 'https://esm.sh/@ffmpeg/core-mt@0.12.6/dist/umd'
+      : 'https://esm.sh/@ffmpeg/core@0.12.6/dist/umd';
 
-    // 6) Load FFmpeg with appropriate config
+    const coreSize = sabAvailable ? '~32 MB' : '~30 MB';
+    status.textContent = `Downloading FFmpeg core (${coreSize}, ${modeLabel})...`;
+
     const loadConfig = {
-      coreURL: coreURL,
-      wasmURL: wasmURL,
+      coreURL: await toBlobURL(`${coreBase}/ffmpeg-core.js`,   'text/javascript'),
+      wasmURL: await toBlobURL(`${coreBase}/ffmpeg-core.wasm`, 'application/wasm'),
     };
 
-    // Only pass workerURL for multi-threaded builds (requires SAB)
-    if (sabAvailable && workerCoreURL) {
-      loadConfig.workerURL = workerCoreURL;
+    // Multi-threaded build also needs the worker file
+    if (sabAvailable) {
+      status.textContent = 'Downloading thread worker...';
+      loadConfig.workerURL = await toBlobURL(`${coreBase}/ffmpeg-core.worker.js`, 'text/javascript');
     }
 
+    status.textContent = `Initializing FFmpeg (${modeLabel})...`;
     await ffmpegInst.load(loadConfig);
 
-    // 7) Update UI with real runtime status
     ffmpegReady = true;
     loader.className = 'engine-loader';
 
     if (sabAvailable) {
       updateSABStatus('multi');
       toast('Multi-threaded engine ready! ⚡', 'success');
-      console.log('[SilentCut] FFmpeg loaded in MULTI-THREADED mode');
+      console.log('[SilentCut] MULTI-THREADED mode');
     } else {
       updateSABStatus('single');
       toast('Engine ready (single-thread mode)', 'success');
-      console.log('[SilentCut] FFmpeg loaded in SINGLE-THREADED mode (SAB not available)');
+      console.log('[SilentCut] SINGLE-THREADED mode');
     }
 
-    // Enable export if analysis was already done
+    // Re-enable export if analysis was already done
     if (analyzed && cutRegions.length > 0) {
       btnExport.disabled = false;
     }
@@ -2034,11 +1980,9 @@ async function startLoadFFmpeg() {
   } catch(err) {
     console.error('FFmpeg load failed:', err);
     updateSABStatus('error');
-
-    const isFileProtocol = location.protocol === 'file:';
-    loader.innerHTML = isFileProtocol
-      ? '<span style="color:#FFD60A;">⚠ Open via http:// not file:// — see the yellow warning above.</span>'
-      : `<span style="color:#FF453A;">⚠ FFmpeg failed: ${err.message}. Try Chrome with internet.</span>`;
+    loader.innerHTML = location.protocol === 'file:'
+      ? '<span style="color:#FFD60A;">⚠ Open via http:// not file:// — see yellow warning above.</span>'
+      : `<span style="color:#FF453A;">⚠ FFmpeg failed: ${err.message}</span>`;
   }
 }
 
