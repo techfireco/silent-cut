@@ -829,6 +829,22 @@
 
 <script type="module">
 // ================================================================
+// WORKER PROXY (Fixes SecurityError for cross-origin workers)
+// ================================================================
+// This allows FFmpeg to load its internal worker from a CDN (esm.sh) 
+// without triggering a SecurityError by wrapping it in a local Blob.
+const OriginalWorker = window.Worker;
+window.Worker = class extends OriginalWorker {
+  constructor(url, options) {
+    if (url.toString().startsWith('http') && !url.toString().includes(location.origin)) {
+      const blob = new Blob([`importScripts('${url}')`], { type: 'text/javascript' });
+      url = URL.createObjectURL(blob);
+    }
+    super(url, options);
+  }
+};
+
+// ================================================================
 // STATE
 // ================================================================
 if (location.protocol === 'file:') {
