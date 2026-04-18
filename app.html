@@ -342,6 +342,50 @@
     /* ===== ACTION BUTTONS ===== */
     .action-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.875rem; }
 
+    /* CHANGED: Added styles for output format picker */
+    .export-container {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    .format-picker-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--surface2);
+      border: 1px solid var(--border2);
+      border-radius: 8px;
+      padding: 6px 10px;
+      margin-bottom: 0.25rem;
+    }
+    .format-picker-wrap select {
+      background: none;
+      border: none;
+      color: var(--text);
+      font-size: 12px;
+      font-family: 'JetBrains Mono', monospace;
+      outline: none;
+      flex: 1;
+      cursor: pointer;
+    }
+    .format-picker-wrap select option {
+      background: var(--surface2);
+      color: var(--text);
+    }
+    .info-tip {
+      color: var(--muted);
+      font-size: 13px;
+      cursor: help;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      border: 1px solid var(--border2);
+      flex-shrink: 0;
+    }
+
     .btn {
       padding: 13px 16px; border-radius: 10px; border: none;
       font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 600;
@@ -687,7 +731,18 @@
       <!-- Action Buttons -->
       <div class="action-row">
         <button class="btn btn-analyze" id="btnAnalyze" disabled>🔍 Detect Silence</button>
-        <button class="btn btn-export" id="btnExport" disabled>⬇️ Export Selection</button>
+        <!-- CHANGED: Export Button with Format Picker -->
+        <div class="export-container">
+          <div class="format-picker-wrap" id="exportFormatWrap">
+            <select id="exportFormat">
+              <option value="mp4">Export as MP4</option>
+              <option value="webm">Export as WebM</option>
+              <option value="mov">Export as MOV</option>
+            </select>
+            <div class="info-tip" title="All video is encoded as H.264 for maximum browser compatibility.">ⓘ</div>
+          </div>
+          <button class="btn btn-export" id="btnExport" style="width: 100%;" disabled>⬇️ Export Selection</button>
+        </div>
       </div>
     </div>
 
@@ -842,6 +897,8 @@ const mainLayout     = $('mainLayout');
 const statsBar       = $('statsBar');
 const btnAnalyze     = $('btnAnalyze');
 const btnExport      = $('btnExport');
+const exportFormat   = $('exportFormat'); // CHANGED: Ref for format select
+const exportFormatWrap = $('exportFormatWrap'); // CHANGED: Ref for wrap
 const btnPlayPause   = $('btnPlayPause');
 const btnStop        = $('btnStop');
 const progressSec    = $('progressSection');
@@ -967,6 +1024,9 @@ async function handleFile(file) {
   uploadZone.style.display = 'none';
   mainLayout.className   = 'main-layout show anim';
   statsBar.className     = 'stats-bar show anim';
+
+  // CHANGED: Hide format picker for audio-only
+  exportFormatWrap.style.display = isAudioOnly ? 'none' : 'flex';
 
   ['statOriginal','statSilence','statFinal','statSaved'].forEach(id => $(id).textContent = '—');
   btnAnalyze.disabled  = true;
@@ -2003,7 +2063,10 @@ btnExport.addEventListener('click', async () => {
   try {
     const ext        = currentFile.name.split('.').pop().toLowerCase();
     const inputName  = `input.${ext}`;
-    const outputName = `output.${ext}`;
+    
+    // CHANGED: Use selected format or input ext for audio
+    const outExt = isAudioOnly ? ext : exportFormat.value;
+    const outputName = `output.${outExt}`;
 
     setProgress(10, 'Loading file into memory...');
     const rawData = await currentFile.arrayBuffer();
@@ -2037,16 +2100,24 @@ btnExport.addEventListener('click', async () => {
 
     let cmd;
     if (isAudioOnly) {
-      // Audio-only: encode to match container format
+      // Audio-only: keep existing codec logic (Point 4)
       const aCodecArgs = ext === 'wav' ? ['-c:a', 'pcm_s16le']
                        : ext === 'flac' ? ['-c:a', 'flac']
                        : ext === 'ogg'  ? ['-c:a', 'libvorbis', '-q:a', '5']
-                       : ['-b:a', '192k']; // mp3, m4a, aac etc.
+                       : ['-c:a', 'aac', '-b:a', '192k']; // mp3, m4a, aac etc.
       cmd = ['-i', inputName, '-filter_complex', fc, '-map', '[outa]', ...aCodecArgs, '-y', outputName];
     } else {
-      // Video: re-encode video (filter_complex requires it), encode audio for container
-      const vCodecArgs = ext === 'webm' ? ['-c:v', 'libvpx', '-b:v', '2M'] : ['-c:v', 'libx264', '-preset', 'fast', '-crf', '23'];
-      const aCodecArgs = ext === 'webm' ? ['-c:a', 'libvorbis', '-q:a', '5'] : ['-c:a', 'aac', '-b:a', '192k'];
+      // Video: Transcode based on choice (Points 1 & 2)
+      let vCodecArgs, aCodecArgs;
+      if (outExt === 'webm') {
+        vCodecArgs = ['-c:v', 'libvpx', '-b:v', '2M'];
+        aCodecArgs = ['-c:a', 'libvorbis', '-q:a', '5'];
+      } else {
+        // MP4 and MOV: Always H.264 + AAC (Point 1)
+        vCodecArgs = ['-c:v', 'libx264', '-preset', 'fast', '-crf', '23', '-pix_fmt', 'yuv420p'];
+        aCodecArgs = ['-c:a', 'aac', '-b:a', '192k'];
+      }
+      
       cmd = ['-i', inputName, '-filter_complex', fc,
         '-map', '[outv]', '-map', '[outa]',
         ...vCodecArgs, ...aCodecArgs, '-y', outputName];
@@ -2056,13 +2127,15 @@ btnExport.addEventListener('click', async () => {
 
     setProgress(92, 'Reading output file...');
     const outData  = await ffmpegInst.readFile(outputName);
+    
+    // CHANGED: mimeType map matches chosen output format (Point 6)
     const mimeTypes = {
       mp4:'video/mp4', mov:'video/quicktime', mkv:'video/x-matroska',
       webm:'video/webm', avi:'video/x-msvideo',
       mp3:'audio/mpeg', wav:'audio/wav', ogg:'audio/ogg',
       m4a:'audio/mp4', flac:'audio/flac', aac:'audio/aac'
     };
-    const mimeType = mimeTypes[ext] || 'application/octet-stream';
+    const mimeType = mimeTypes[outExt] || 'application/octet-stream';
     outputBlob     = new Blob([outData], { type: mimeType });
 
     await ffmpegInst.deleteFile(inputName).catch(() => {});
@@ -2072,20 +2145,20 @@ btnExport.addEventListener('click', async () => {
     progressTitle.textContent = '✅ Processing Complete!';
     progressFill.style.background = 'linear-gradient(90deg, var(--success), #16A34A)';
 
-    // Auto-download — use octet-stream to force download instead of inline display
+    // CHANGED: Use chosen export format extension (Point 3)
     const baseName = currentFile.name.replace(/\.[^.]+$/, '');
-    const fileName = `${baseName}_autocut.${ext}`;
+    const finalFileName = `${baseName}_autocut.${outExt}`;
     const downloadBlob = new Blob([outData], { type: 'application/octet-stream' });
     const url = URL.createObjectURL(downloadBlob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = fileName;
+    a.download = finalFileName;
     a.style.display = 'none';
     document.body.appendChild(a);
     a.click();
     setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 10000);
 
-    toast(`Saved: ${fileName}`, 'success');
+    toast(`Saved: ${finalFileName}`, 'success');
   } catch(err) {
     console.error(err);
     setProgress(0, '❌ ' + err.message, '❌ Processing Failed');
@@ -2126,6 +2199,7 @@ function resetAll() {
   progressSec.className    = 'progress-section';
   segmentsInfo.className   = 'segments-info';
   skipToggleWrap.className = 'skip-toggle';
+  exportFormatWrap.style.display = 'none'; // CHANGED: Reset format picker visibility
 
   btnExport.disabled   = true;
   btnExport.classList.remove('ready');
