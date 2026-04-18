@@ -1960,21 +1960,26 @@ async function startLoadFFmpeg() {
 
     // Choose core: MT if SAB available, ST otherwise
     const coreBase = sabAvailable
-      ? 'https://esm.sh/@ffmpeg/core-mt@0.12.6/dist/umd'
-      : 'https://esm.sh/@ffmpeg/core@0.12.6/dist/umd';
+      ? 'https://unpkg.com/@ffmpeg/core-mt@0.12.6/dist/umd'
+      : 'https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd';
 
     const coreSize = sabAvailable ? '~32 MB' : '~30 MB';
     status.textContent = `Downloading FFmpeg core (${coreSize}, ${modeLabel})...`;
 
+    // CHANGED: Use unpkg for core assets. JS and Worker URLs should be absolute 
+    // so the Worker Proxy can wrap them, while WASM is converted to a Blob 
+    // to bypass CORS fetch restrictions inside the worker.
+    const wasmURL = await toBlobURL(`${coreBase}/ffmpeg-core.wasm`, 'application/wasm');
+
     const loadConfig = {
-      coreURL: await toBlobURL(`${coreBase}/ffmpeg-core.js`,   'text/javascript'),
-      wasmURL: await toBlobURL(`${coreBase}/ffmpeg-core.wasm`, 'application/wasm'),
+      coreURL: `${coreBase}/ffmpeg-core.js`,
+      wasmURL: wasmURL,
     };
 
     // Multi-threaded build also needs the worker file
     if (sabAvailable) {
       status.textContent = 'Downloading thread worker...';
-      loadConfig.workerURL = await toBlobURL(`${coreBase}/ffmpeg-core.worker.js`, 'text/javascript');
+      loadConfig.workerURL = `${coreBase}/ffmpeg-core.worker.js`;
     }
 
     status.textContent = `Initializing FFmpeg (${modeLabel})...`;
