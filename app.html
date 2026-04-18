@@ -837,7 +837,11 @@ const OriginalWorker = window.Worker;
 window.Worker = class extends OriginalWorker {
   constructor(url, options) {
     if (url.toString().startsWith('http') && !url.toString().includes(location.origin)) {
-      const blob = new Blob([`importScripts('${url}')`], { type: 'text/javascript' });
+      const isModule = options && options.type === 'module';
+      const script = isModule 
+        ? `import '${url}';` 
+        : `importScripts('${url}');`;
+      const blob = new Blob([script], { type: 'application/javascript' });
       url = URL.createObjectURL(blob);
     }
     super(url, options);
